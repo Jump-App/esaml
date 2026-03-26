@@ -234,7 +234,7 @@ load_metadata(Url, FPs) ->
         [{Url, Meta}] -> Meta;
         _ ->
             {ok, {{_Ver, 200, _}, _Headers, Body}} = httpc:request(get, {Url, []}, [{autoredirect, true}, {timeout, 3000}], []),
-            {Xml, _} = xmerl_scan:string(Body, [{namespace_conformant, true}]),
+            {Xml, _} = xmerl_scan:string(Body, [{namespace_conformant, true}, {allow_entities, false}]),
             case xmerl_dsig:verify(Xml, Fingerprints) of
                 ok -> ok;
                 Err -> error(Err)
@@ -252,7 +252,7 @@ load_metadata(Url) ->
         _ ->
             Timeout = application:get_env(esaml, load_metadata_timeout, 15000),
             {ok, {{_Ver, 200, _}, _Headers, Body}} = httpc:request(get, {Url, []}, [{autoredirect, true}, {timeout, Timeout}], []),
-            {Xml, _} = xmerl_scan:string(Body, [{namespace_conformant, true}]),
+            {Xml, _} = xmerl_scan:string(Body, [{namespace_conformant, true}, {allow_entities, false}]),
             {ok, Meta = #esaml_idp_metadata{}} = esaml:decode_idp_metadata(Xml),
             ets:insert(esaml_idp_meta_cache, {Url, Meta}),
             Meta

@@ -81,14 +81,14 @@ xxe_internal_entity_rejected_test() ->
         esaml_binding:decode_response(<<>>, Payload)).
 
 %% CVE-2026-28809: decrypt_assertion/2 calls xmerl_scan:string with
-%% the same options [{namespace_conformant, true}]. This test confirms
-%% entities are rejected on that code path too.
+%% [{namespace_conformant, true}, {allow_entities, false}]. This test
+%% confirms entities are rejected on that code path too.
 xxe_decrypt_assertion_path_rejects_entities_test() ->
     XxeAssertion = xxe_saml_assertion(
         "<!ENTITY xxe SYSTEM \"file:///etc/hostname\">", "&xxe;"),
     ?assertExit(
         {fatal, {{error, entities_not_allowed}, _, _, _}},
-        xmerl_scan:string(XxeAssertion, [{namespace_conformant, true}])).
+        xmerl_scan:string(XxeAssertion, [{namespace_conformant, true}, {allow_entities, false}])).
 
 %%====================================================================
 %% Tests: Demonstrate the vulnerability (pre-OTP-27 behavior)
