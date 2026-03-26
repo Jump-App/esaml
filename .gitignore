@@ -4,6 +4,5 @@ _build
 doc
 ebin
 erl_crash.dump
-rebar.lock
 rebar3.crashdump
 test/*.beam
