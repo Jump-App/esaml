@@ -260,6 +260,15 @@ validate_assertion(Xml, DuplicateFun, SP = #esaml_sp{}) ->
             end
         end,
         fun(X) ->
+            if SP#esaml_sp.encrypt_mandatory ->
+                case xmerl_xpath:string("/samlp:Response/saml:EncryptedAssertion", X, [{namespace, Ns}]) of
+                    [_] -> X;  % Encrypted assertion found, continue
+                    _ -> {error, encryption_required}
+                end;
+            true -> X  % Not mandatory, continue
+            end
+        end,
+        fun(X) ->
             case xmerl_xpath:string("/samlp:Response/saml:EncryptedAssertion", X, [{namespace, Ns}]) of
                 [A1] ->
                     try
