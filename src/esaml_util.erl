@@ -234,7 +234,7 @@ load_metadata(Url, FPs) ->
         [{Url, Meta}] -> Meta;
         _ ->
             {ok, {{_Ver, 200, _}, _Headers, Body}} = httpc:request(get, {Url, []}, [{autoredirect, true}, {timeout, 3000}], []),
-            {Xml, _} = xmerl_scan:string(Body, [{namespace_conformant, true}]),
+            {Xml, _} = xmerl_scan:string(Body, [{namespace_conformant, true}, {allow_entities, false}]),
             case xmerl_dsig:verify(Xml, Fingerprints) of
                 ok -> ok;
                 Err -> error(Err)
@@ -252,7 +252,7 @@ load_metadata(Url) ->
         _ ->
             Timeout = application:get_env(esaml, load_metadata_timeout, 15000),
             {ok, {{_Ver, 200, _}, _Headers, Body}} = httpc:request(get, {Url, []}, [{autoredirect, true}, {timeout, Timeout}], []),
-            {Xml, _} = xmerl_scan:string(Body, [{namespace_conformant, true}]),
+            {Xml, _} = xmerl_scan:string(Body, [{namespace_conformant, true}, {allow_entities, false}]),
             {ok, Meta = #esaml_idp_metadata{}} = esaml:decode_idp_metadata(Xml),
             ets:insert(esaml_idp_meta_cache, {Url, Meta}),
             Meta
@@ -345,37 +345,37 @@ build_nsinfo_test() ->
 
 key_load_test() ->
     start_ets(),
-    KeyPath = "../test/selfsigned_key.pem",
+    KeyPath = "test/selfsigned_key.pem",
     Key = load_private_key(KeyPath),
     ?assertEqual([{KeyPath, Key}], ets:lookup(esaml_privkey_cache, KeyPath)).
 
 key_import_test() ->
     start_ets(),
-    {ok, EncodedKey} = file:read_file("../test/selfsigned_key.pem"),
+    {ok, EncodedKey} = file:read_file("test/selfsigned_key.pem"),
     Key = import_private_key(EncodedKey, my_key),
     ?assertEqual([{my_key, Key}], ets:lookup(esaml_privkey_cache, my_key)).
 
 bad_key_load_test() ->
     start_ets(),
-    KeyPath = "../test/bad_data.pem",
+    KeyPath = "test/bad_data.pem",
     ?assertException(error, {badmatch, []}, load_private_key(KeyPath)),
     ?assertEqual([], ets:lookup(esaml_privkey_cache, KeyPath)).
 
 cert_load_test() ->
     start_ets(),
-    CertPath = "../test/selfsigned.pem",
+    CertPath = "test/selfsigned.pem",
     Cert = load_certificate(CertPath),
     ?assertEqual([{CertPath, [Cert]}], ets:lookup(esaml_certbin_cache, CertPath)).
 
 cert_import_test() ->
     start_ets(),
-    {ok, EncodedCert} = file:read_file("../test/selfsigned.pem"),
+    {ok, EncodedCert} = file:read_file("test/selfsigned.pem"),
     Cert = import_certificate(EncodedCert, my_cert),
     ?assertEqual([{my_cert, [Cert]}], ets:lookup(esaml_certbin_cache, my_cert)).
 
 bad_cert_load_test() ->
     start_ets(),
-    CertPath = "../test/bad_data.pem",
+    CertPath = "test/bad_data.pem",
     ?assertException(error, {badmatch, []}, load_certificate(CertPath)),
     ?assertEqual([{CertPath, []}], ets:lookup(esaml_certbin_cache, CertPath)).
 

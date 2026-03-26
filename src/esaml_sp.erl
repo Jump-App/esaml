@@ -328,7 +328,7 @@ decrypt_assertion(Xml, #esaml_sp{key = PrivateKey}) ->
     SymmetricKey = decrypt_key_info(EncryptedData, Xml, PrivateKey),
     [#xmlAttribute{value = Algorithm}] = xmerl_xpath:string("./xenc:EncryptionMethod/@Algorithm", EncryptedData, [{namespace, XencNs}]),
     AssertionXml = block_decrypt(Algorithm, SymmetricKey, CipherValue),
-    {Assertion, _} = xmerl_scan:string(AssertionXml, [{namespace_conformant, true}]),
+    {Assertion, _} = xmerl_scan:string(AssertionXml, [{namespace_conformant, true}, {allow_entities, false}]),
     Assertion.
 
 
